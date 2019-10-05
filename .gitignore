@@ -1,0 +1,5 @@
+*.pyc
+*_vizdoom.ini
+*.so
+*.o
+*__pycache__*
