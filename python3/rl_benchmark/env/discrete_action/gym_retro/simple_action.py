@@ -1,6 +1,7 @@
-from mlt_pkg.reinforcement_learning.env.gym_retro.std_env import GymRetroEnvironment as BasicEnv
-from mlt_pkg.reinforcement_learning.env.gym_retro.reward_helper import reward_reshape
 import retro
+from rl_benchmark.env.discrete_action.gym_retro.std_env import GymRetroEnvironment as BasicEnv
+from rl_benchmark.env.discrete_action.gym_retro.reward_helper import reward_reshape
+
 
 class GymRetroEnvironment(BasicEnv):
     """

@@ -1,7 +1,7 @@
-from mlt_pkg.reinforcement_learning.env.discrete_action.gym_super_mario_bros.std_env import MarioEnvironment as BasicEnvironment
 from nes_py.wrappers import BinarySpaceToDiscreteSpaceEnv
 import gym_super_mario_bros
 from gym_super_mario_bros.actions import SIMPLE_MOVEMENT, RIGHT_ONLY, COMPLEX_MOVEMENT
+from rl_benchmark.env.discrete_action.gym_super_mario_bros.std_env import MarioEnvironment as BasicEnvironment
 
 class MarioEnvironment(BasicEnvironment):
     """

@@ -1,6 +1,6 @@
-from mlt_pkg.reinforcement_learning.env.gym_retro.std_env import GymRetroEnvironment as EnvCore
 from multiprocessing import Process, Pipe
-from mlt_pkg.reinforcement_learning.env.abstract_env import AbstractEnvironment
+from rl_benchmark.env.discrete_action.abstract_env import AbstractEnvironment
+from rl_benchmark.env.discrete_action.gym_retro.std_env import GymRetroEnvironment as EnvCore
 
 def env_process(game_name, level_name, task_name, conn):
     """

@@ -1,5 +1,5 @@
-from mlt_pkg.reinforcement_learning.env.gym_retro.std_wrapper import GymRetroEnvironment as BasicWrapper
-from mlt_pkg.reinforcement_learning.env.gym_retro.simple_action import GymRetroEnvironment as EnvCore
+from rl_benchmark.env.discrete_action.gym_retro.std_wrapper import GymRetroEnvironment as BasicWrapper
+from rl_benchmark.env.discrete_action.gym_retro.simple_action import GymRetroEnvironment as EnvCore
 from multiprocessing import Process, Pipe
 
 def env_process(game_name, level_name, task_name, conn):

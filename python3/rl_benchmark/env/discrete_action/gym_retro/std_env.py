@@ -1,9 +1,9 @@
-from mlt_pkg.reinforcement_learning.env.abstract_env import AbstractEnvironment
-from skimage.transform import resize
+import cv2
 import numpy as np
 from skimage.color import rgb2grey
 import retro
-from mlt_pkg.reinforcement_learning.env.gym_retro.reward_helper import reward_reshape
+from rl_benchmark.env.discrete_action.abstract_env import AbstractEnvironment
+from rl_benchmark.env.discrete_action.gym_retro.reward_helper import reward_reshape
 
 class GymRetroEnvironment(AbstractEnvironment):
     """
@@ -58,7 +58,7 @@ class GymRetroEnvironment(AbstractEnvironment):
         if (state.ndim == 2):
             state = np.expand_dims(state, axis = -1)
         assert (state.ndim == 3), 'shape of screen should be [h, w, c]'
-        state = resize(state, resolution[:2], preserve_range = True)
+        state = cv2.resize(state, tuple(resolution[:2][::-1]))
         state = state.astype(np.float)
         if (not normalized):
             state /= 255.

@@ -1,11 +1,11 @@
-from mlt_pkg.reinforcement_learning.env.discrete_action.abstract_env import AbstractEnvironment
-from skimage.transform import resize
+from cv2 import resize
 import numpy as np
 from skimage.color import rgb2grey
 from nes_py.wrappers import BinarySpaceToDiscreteSpaceEnv
 import gym_super_mario_bros
 from gym_super_mario_bros.actions import SIMPLE_MOVEMENT, RIGHT_ONLY, COMPLEX_MOVEMENT
-from mlt_pkg.reinforcement_learning.env.gym_super_mario_bros.reward_helper import reward_reshape
+from rl_benchmark.env.discrete_action.abstract_env import AbstractEnvironment
+from rl_benchmark.env.discrete_action.gym_super_mario_bros.reward_helper import reward_reshape
 
 class MarioEnvironment(AbstractEnvironment):
     """

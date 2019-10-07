@@ -1,9 +1,8 @@
-from mlt_pkg.reinforcement_learning.env.discrete_action.abstract_env import AbstractEnvironment
 from vizdoom import *
-from skimage.transform import resize
 import numpy as np
 from skimage.color import rgb2grey
 import cv2
+from rl_benchmark.env.discrete_action.abstract_env import AbstractEnvironment
 
 class VizdoomEnvironment(AbstractEnvironment):
     """
@@ -66,7 +65,7 @@ class VizdoomEnvironment(AbstractEnvironment):
         if (screen.ndim == 2):
             screen = np.expand_dims(screen, axis = -1)
         assert (screen.ndim == 3), 'shape of screen should be [h, w, c]'
-        state = cv2.resize(screen, tuple(resolution[:2]))
+        state = cv2.resize(screen, tuple(resolution[:2][::-1]))
         state = state.astype(np.float)
         if (state.max() > 1):
             state /= 255.
