@@ -1,0 +1,1 @@
+{"conv_arch": [[8, 32, 4, 0, true, "relu"], [4, 64, 2, 0, true, "relu"], [3, 64, 1, 0, true, "relu"]], "fc_before_lstm": [[512, true, "relu"]], "img_resolution": [120, 160, 3], "lstm_h_size": 256, "n_action": 4}
