@@ -76,102 +76,42 @@ parser.add_argument('--minibatch_size',
                 type = int, default = 2)
 args = parser.parse_args()
 
-# set up model and worker
-env_set = [VizdoomEnvironment(args.task_file, args.task)
-                for _ in range(args.n_env)]
-env_test = VizdoomEnvironment(args.task_file, args.task)
-print('Environment is ready')
-model_config = json.load(open(args.model_config))
-model_config['n_action'] = len(env_test.action_set())
-model = PPOModel(**model_config)
-print('Model is ready')
-worker = PPOWorker(model, env_set, args.gamma, args.lambda_gae,
-                        optimizer_type = args.optimizer)
-print('Worker is ready')
-# set up device
-print('Setup device')
-if (args.gpu_id is not None):
-    device = torch.device('cuda:' + str(args.gpu_id))
-    model.to(device = device, dtype = torch.float32)
-else:
-    model.to(device = 'cpu', dtype = torch.float32)
-print('Device setup done')
-# set up summary writer if necessary
-if (args.statistics_output is not None):
-    if (not os.path.exists(args.statistics_output)):
-        os.mkdir(args.statistics_output)
-    summary_writer = tf.compat.v1.summary.FileWriter(os.path.join(
-                                        args.statistics_output, 'test'))
-else:
-    summary_writer = None
-# initial test
-print('Initial Test')
-report = worker.test(env_test, args.test_episode, args.num_repeat)
-print("Results: score mean: %.5f(%.5f)," %
-        (report['score_mean'], report['score_std']),
-        "min: %.5f" % report['score_min'],
-        "max: %.5f" % report['score_max'])
-print(time.ctime())
-if (summary_writer is not None):
-    summary = tf.compat.v1.Summary()
-    summary.value.add(tag = 'Average Total Reward',
-                        simple_value = report['score_mean'])
-    summary.value.add(tag = 'Score Standard Variance',
-                        simple_value = report['score_std'])
-    summary_writer.add_summary(summary, 0)
-    summary_writer.flush()
-if (args.model_output_prefix is not None):
-    model_output_path = args.model_output_prefix + '_it_0.pth'
-    torch.save(model.state_dict(), model_output_path)
-    print('Model saved to ', model_output_path)
-# training
-print('Start Training')
-learning_rate = args.learning_rate
-time_start = time.time()
-total_step = 0
-total_ep = 0
-last_lr_decay_it = 0
-while (total_step < args.max_total_step):
-    step_total_next = min(args.max_total_step - total_step,
-                                        args.report_per_it)
-    print('-----Itertion %d/%d ~ %d/%d-----' %
-                (total_step, args.max_total_step,
-                total_step + step_total_next, args.max_total_step))
-    it_cnt = 0
-    print('Learning rate: ' + str(learning_rate))
-    for learning_step in trange(step_total_next):
-        if (it_cnt <= learning_step):
-            step_sampled, finished_episode = worker.train_batch(
-                        args.n_step,
-                        step_total_next - it_cnt, args.num_repeat,
-                        args.coeff_value, args.coeff_policy,
-                        args.coeff_entropy,
-                        args.value_clip_range, args.policy_clip_range,
-                        learning_rate, args.n_epoch, args.minibatch_size,
-                        args.grad_clip_norm)
-            it_cnt += step_sampled
-            total_ep += finished_episode
-        if (args.learning_rate_decay_per_it > 0 and
-                total_step + it_cnt - last_lr_decay_it >=
-                                args.learning_rate_decay_per_it):
-            learning_rate *= args.learning_rate_decay
-            last_lr_decay_it = total_step + it_cnt
-    total_step += step_total_next
-    print('Test After %d Iterations' % total_step)
+if __name__ == '__main__':
+    # set up model and worker
+    env_set = [VizdoomEnvironment(args.task_file, args.task)
+                    for _ in range(args.n_env)]
+    env_test = VizdoomEnvironment(args.task_file, args.task)
+    print('Environment is ready')
+    model_config = json.load(open(args.model_config))
+    model_config['n_action'] = len(env_test.action_set())
+    model = PPOModel(**model_config)
+    print('Model is ready')
+    worker = PPOWorker(model, env_set, args.gamma, args.lambda_gae,
+                            optimizer_type = args.optimizer)
+    print('Worker is ready')
+    # set up device
+    print('Setup device')
+    if (args.gpu_id is not None):
+        device = torch.device('cuda:' + str(args.gpu_id))
+        model.to(device = device, dtype = torch.float32)
+    else:
+        model.to(device = 'cpu', dtype = torch.float32)
+    print('Device setup done')
+    # set up summary writer if necessary
+    if (args.statistics_output is not None):
+        if (not os.path.exists(args.statistics_output)):
+            os.mkdir(args.statistics_output)
+        summary_writer = tf.compat.v1.summary.FileWriter(os.path.join(
+                                            args.statistics_output, 'test'))
+    else:
+        summary_writer = None
+    # initial test
+    print('Initial Test')
     report = worker.test(env_test, args.test_episode, args.num_repeat)
     print("Results: score mean: %.5f(%.5f)," %
             (report['score_mean'], report['score_std']),
             "min: %.5f" % report['score_min'],
             "max: %.5f" % report['score_max'])
-    print('Total training episode: %d' % total_ep)
-    total_minute = (time.time() - time_start) / 60.0
-    if (total_minute < 60):
-        print("Total elapsed time: %.2f minutes" % total_minute)
-    else:
-        total_hour = int(total_minute / 60)
-        total_minute -= 60 * total_hour
-        print("Total elapsed time: %d hour %.2f minutes" %
-                                        (total_hour, total_minute))
     print(time.ctime())
     if (summary_writer is not None):
         summary = tf.compat.v1.Summary()
@@ -179,18 +119,79 @@ while (total_step < args.max_total_step):
                             simple_value = report['score_mean'])
         summary.value.add(tag = 'Score Standard Variance',
                             simple_value = report['score_std'])
-        summary.value.add(tag = 'Training Episode', simple_value = total_ep)
-        summary_writer.add_summary(summary, total_step)
+        summary_writer.add_summary(summary, 0)
         summary_writer.flush()
     if (args.model_output_prefix is not None):
-        model_output_path = args.model_output_prefix + ('_it_%d.pth' %
-                                                            total_step)
+        model_output_path = args.model_output_prefix + '_it_0.pth'
         torch.save(model.state_dict(), model_output_path)
-        print('Model saved to ', model_output_path) 
+        print('Model saved to ', model_output_path)
+    # training
+    print('Start Training')
+    learning_rate = args.learning_rate
+    time_start = time.time()
+    total_step = 0
+    total_ep = 0
+    last_lr_decay_it = 0
+    while (total_step < args.max_total_step):
+        step_total_next = min(args.max_total_step - total_step,
+                                            args.report_per_it)
+        print('-----Itertion %d/%d ~ %d/%d-----' %
+                    (total_step, args.max_total_step,
+                    total_step + step_total_next, args.max_total_step))
+        it_cnt = 0
+        print('Learning rate: ' + str(learning_rate))
+        for learning_step in trange(step_total_next):
+            if (it_cnt <= learning_step):
+                step_sampled, finished_episode = worker.train_batch(
+                            args.n_step,
+                            step_total_next - it_cnt, args.num_repeat,
+                            args.coeff_value, args.coeff_policy,
+                            args.coeff_entropy,
+                            args.value_clip_range, args.policy_clip_range,
+                            learning_rate, args.n_epoch, args.minibatch_size,
+                            args.grad_clip_norm)
+                it_cnt += step_sampled
+                total_ep += finished_episode
+            if (args.learning_rate_decay_per_it > 0 and
+                    total_step + it_cnt - last_lr_decay_it >=
+                                    args.learning_rate_decay_per_it):
+                learning_rate *= args.learning_rate_decay
+                last_lr_decay_it = total_step + it_cnt
+        total_step += step_total_next
+        print('Test After %d Iterations' % total_step)
+        report = worker.test(env_test, args.test_episode, args.num_repeat)
+        print("Results: score mean: %.5f(%.5f)," %
+                (report['score_mean'], report['score_std']),
+                "min: %.5f" % report['score_min'],
+                "max: %.5f" % report['score_max'])
+        print('Total training episode: %d' % total_ep)
+        total_minute = (time.time() - time_start) / 60.0
+        if (total_minute < 60):
+            print("Total elapsed time: %.2f minutes" % total_minute)
+        else:
+            total_hour = int(total_minute / 60)
+            total_minute -= 60 * total_hour
+            print("Total elapsed time: %d hour %.2f minutes" %
+                                            (total_hour, total_minute))
+        print(time.ctime())
+        if (summary_writer is not None):
+            summary = tf.compat.v1.Summary()
+            summary.value.add(tag = 'Average Total Reward',
+                                simple_value = report['score_mean'])
+            summary.value.add(tag = 'Score Standard Variance',
+                                simple_value = report['score_std'])
+            summary.value.add(tag = 'Training Episode', simple_value = total_ep)
+            summary_writer.add_summary(summary, total_step)
+            summary_writer.flush()
+        if (args.model_output_prefix is not None):
+            model_output_path = args.model_output_prefix + ('_it_%d.pth' %
+                                                                total_step)
+            torch.save(model.state_dict(), model_output_path)
+            print('Model saved to ', model_output_path) 
 
-print('Closing environments')
-env_test.close()
-for env in env_set:
-    env.close()
-print('done')
+    print('Closing environments')
+    env_test.close()
+    for env in env_set:
+        env.close()
+    print('done')
 

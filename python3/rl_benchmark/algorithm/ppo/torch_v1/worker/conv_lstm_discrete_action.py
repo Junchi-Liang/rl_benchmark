@@ -1,3 +1,4 @@
+import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -18,7 +19,7 @@ class PPOWorker(object):
         """
         model : PPOModel                                                      
         model = ppo model
-        env_list : list of reinforcement_learning.env
+        env_list : list of rl_benchmark.env
         env_list = list of environments
         gamma : float
         gamma = discount factor
@@ -41,6 +42,9 @@ class PPOWorker(object):
             self.optimizer = self.get_optimizer(optimizer_type)
         else:
             self.optimizer = None
+        for env in self.env_set:
+            env.new_episode()
+            time.sleep(0.5)
 
     def get_optimizer(self, optimizer_type):
         """
@@ -379,6 +383,12 @@ class PPOWorker(object):
         max_total_step = max total step
         num_repeat : int
         num_repeat = number of repeated actions
+        coeff_value : float
+        coeff_value = coefficient for value loss
+        coeff_policy : float
+        coeff_policy = coefficient for policy gradient
+        coeff_entropy : float
+        coeff_entropy  = coefficient for entropy
         policy_clip_range : float
         policy_clip_range = clip range for policy loss
         value_clip_range : float
@@ -401,7 +411,7 @@ class PPOWorker(object):
                                     max_local_time_step, max_total_step)
         total_step, finished_episode, trajectory_set =\
                                 self.sample_trajectory(
-                                    env_id_list,schedule_local_time_step,
+                                    env_id_list, schedule_local_time_step,
                                     num_repeat)
         local_step = int(total_step / len(env_id_list))
         for i_epoch in range(num_epoch):
@@ -452,7 +462,7 @@ class PPOWorker(object):
         """
         Test The Model
         Args:
-        env_test : reinforcement_learning.env
+        env_test : rl_benchmark.env
         env_test = environment for testing
         test_episode : int
         test_episode = number of test episodes

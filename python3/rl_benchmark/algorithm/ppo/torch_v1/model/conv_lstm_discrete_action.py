@@ -191,54 +191,57 @@ class PPOModel(nn.Module):
         nn.init.xavier_uniform_(self.value_branch.weight)
         self.policy_softmax = nn.Softmax(dim = -1)
 
-    def forward(self, img, lstm_state = None):
+    def forward(self, img_batch, lstm_state_batch = None):
         """
         Forward The Architecture
         Args:
-        img : torch.tensor
-        img = batch input image, shape (batch size or sequence size * batch size, c, h, w)
-        lstm_state : dictionary
-        lstm_state = batch input lstm state, indexed by names in self.lstm_layer()
+        img_batch : torch.tensor
+        img_batch = batch input image, shape (batch size or sequence size * batch size, c, h, w)
+        lstm_state_batch : dictionary
+        lstm_state_batch = batch input lstm state, indexed by names in self.lstm_layer()
                             each element is (h0, c0)
                             h0, c0 are torch.tensor
                             shape of h0, c0 is (1, batch size, hidden size)
         Returns:
-        pi_logits : torch.tensor
-        pi_logits = logits for policy, shape (batch size, n_action)
-        pi : torch.tensor
-        pi = policy, shape (batch size, n_action)
-        value : torch.tensor
-        value = value, shape (batch size, 1)
-        lstm_state_output : dictionary
-        lstm_state_output = output lstm state, indexed by names in self.lstm_layer()
-                            each element is (ht, ct)
-                            shape of ht, ct is (1, batch size, hidden size)
+        result : dictionary
+        result = collection of forward results
+            'pi_logits' : torch.tensor
+            'pi_logits' = logits for policy, shape (seq len * batch size, n_action)
+            'pi' : torch.tensor
+            'pi' = policy, shape (seq len * batch size, n_action)
+            'value' : torch.tensor
+            'value' = value, shape (seq len * batch size, 1)
+            'lstm_state_output' : dictionary
+            'lstm_state_output' = output lstm state, indexed by names in self.lstm_layer()
+                                each element is (ht, ct)
+                                shape of ht, ct is (1, batch size, hidden size)
         """
         device = list(self.parameters())[0].device
         dtype = list(self.parameters())[0].dtype
         module_dict = dict(self.named_modules())
-        img = img.to(device = device, dtype = dtype)
-        encode_result = self.encoder(img)
+        img_batch = img_batch.to(device = device, dtype = dtype)
+        encode_result = self.encoder(img_batch)
         lstm_state_output = {}
         for lstm_layer_id in self.lstm_layer():
-            batch_size = lstm_state[lstm_layer_id][0].size(1)
+            batch_size = lstm_state_batch[lstm_layer_id][0].size(1)
             seq_len = int(encode_result.size(0) / batch_size)
             lstm_input = encode_result.view(seq_len, batch_size,
                                             encode_result.size(1))
-            lstm_state_batch = (
-                    lstm_state[lstm_layer_id][0].to(
+            lstm_state_tuple = (
+                    lstm_state_batch[lstm_layer_id][0].to(
                         device = device, dtype = dtype),
-                    lstm_state[lstm_layer_id][1].to(
+                    lstm_state_batch[lstm_layer_id][1].to(
                         device = device, dtype = dtype))
             lstm_output, state_t = module_dict[lstm_layer_id](
-                        lstm_input, lstm_state_batch)
+                        lstm_input, lstm_state_tuple)
             lstm_state_output[lstm_layer_id] = state_t
             encode_result = lstm_output.view(seq_len * batch_size,
                                                 lstm_output.size(-1))
         pi_logits = self.policy_branch(encode_result)
         pi = self.policy_softmax(pi_logits)
         value = self.value_branch(encode_result)
-        return pi_logits, pi, value, lstm_state_output
+        return {'pi_logits': pi_logits, 'pi': pi, 'value': value,
+                'lstm_state_output': lstm_state_output}
 
     def sample_action(self, img_input,
             lstm_state_input = None):
@@ -246,7 +249,8 @@ class PPOModel(nn.Module):
         Sample Actions
         Args:
         img_input : numpy.ndarray
-        img_input = input of current screen images, shape (batch size, h, w, c) or (h, w, c)
+        img_input = input of current screen images,
+                        shape (seq len * batch size, h, w, c) or (h, w, c)
         lstm_state_input : dictionary
         lstm_state_input = input lstm state batch, indexed by names in self.lstm_layer()
                             each element is (h0, c0)
@@ -257,16 +261,16 @@ class PPOModel(nn.Module):
         action_info : dictionary
         action_info = information of sampled action
             "action_index" : numpy.ndarray or int
-            "action_index" = batch of actions, shape [batch size]
+            "action_index" = batch of actions, shape [seq len * batch size]
             "lstm_state_output" : dictionary
             "lstm_state_output" = output lstm state, indexed by names in self.lstm_layer()
                                 each element is (h0, c0)
                                 h0, c0 are numpy.ndarray
                                 shape of h0, c0 is (1, batch size, hidden size)
             "state_value" : numpy.ndarray or float
-            "state_value" = value function of current state, shape [batch size]
+            "state_value" = value function of current state, shape [seq len * batch size]
             "pi" : numpy.ndarray or float
-            "pi" = policy, shape [batch size, number of actions] or [number of actions]
+            "pi" = policy, shape [seq len * batch size, number of actions] or [number of actions]
         """
         if (img_input.ndim == 3):
             img_batch = np.expand_dims(
@@ -286,6 +290,7 @@ class PPOModel(nn.Module):
                         lstm_state_input[
                             lstm_layer_id][s].astype(np.float)))
                 elif (lstm_state_input[lstm_layer_id][s].ndim == 2):
+                    # shape (1, hidden size) => (1, batch size, hidden size)
                     state.append(torch.from_numpy(
                         np.expand_dims(
                             lstm_state_input[
@@ -299,9 +304,10 @@ class PPOModel(nn.Module):
                     raise NotImplementedError
             lstm_state_batch[lstm_layer_id] = tuple(state)
         with torch.no_grad():
-            _, pi_tensor, value_tensor,\
-                    lstm_state_output_tensor = self.forward(
-                                img_batch, lstm_state_batch)
+            forward_result = self.forward(img_batch, lstm_state_batch)
+            pi_tensor = forward_result['pi']
+            value_tensor = forward_result['value']
+            lstm_state_output_tensor = forward_result['lstm_state_output']
         lstm_state_output = {}
         for lstm_layer_id in self.lstm_layer():
             state = []
@@ -311,6 +317,7 @@ class PPOModel(nn.Module):
                         lstm_state_output_tensor[lstm_layer_id
                                         ][s].to('cpu').numpy())
                 elif (lstm_state_input[lstm_layer_id][s].ndim == 2):
+                    # shape (1, batch size, hidden size) => (1, hidden size)
                     state.append(
                         np.squeeze(
                             lstm_state_output_tensor[lstm_layer_id
@@ -386,18 +393,20 @@ class PPOModel(nn.Module):
         """
         if (value_output is None or policy_output is None or
                                         policy_logits is None):
-            img_input = torch.from_numpy(
+            img_batch = torch.from_numpy(
                     np.transpose(data_set['img'].astype(np.float),
                         [0, 3, 1, 2]))
-            lstm_state_input = {}
+            lstm_state_batch = {}
             for lstm_layer_id in self.lstm_layer():
-                lstm_state_input[lstm_layer_id] = [
+                lstm_state_batch[lstm_layer_id] = [
                     torch.from_numpy(data_set['lstm_state_input'
                         ][lstm_layer_id][0].astype(np.float)),
                     torch.from_numpy(data_set['lstm_state_input'
                         ][lstm_layer_id][1].astype(np.float))]
-            policy_logits, policy_output, value_output, _ = self.forward(
-                                            img_input, lstm_state_input)
+            forward_result = self.forward(img_batch, lstm_state_batch)
+            policy_logits = forward_result['pi_logits']
+            policy_output = forward_result['pi']
+            value_output = forward_result['value']
         device = policy_output.device
         loss = {}
         value_output = torch.squeeze(value_output, dim = 1)
