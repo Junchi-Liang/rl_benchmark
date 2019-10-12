@@ -16,17 +16,20 @@ parser.add_argument('--model_config',
 parser.add_argument('--model_file', help = 'Path to model file')
 parser.add_argument('--task_file', help = 'Path to cfg file')
 parser.add_argument('--task', help = 'Name of task')
-parser.add_argument('--num_repeat', help = 'Number of repeated actions',
-                                                    type = int, default = 4)
+parser.add_argument('--num_repeat',
+        help = 'Number of repeated actions',
+        type = int, default = 4)
 parser.add_argument('--gpu_id', help = 'GPU id', default = None)
-parser.add_argument('--test_episode', help = 'Number of test episodes',
-                                                type = int, default = 20)
+parser.add_argument('--test_episode',
+        help = 'Number of test episodes',
+        type = int, default = 20)
 parser.add_argument('--visualize_pause',
-        help = 'Pause time in ms visualization', type = int, default = -1)
+        help = 'Pause time in ms visualization',
+        type = int, default = -1)
 parser.add_argument('--visualize_height',
-                help = 'Height for visualization', type = int)
+        help = 'Height for visualization', type = int)
 parser.add_argument('--visualize_width',
-                help = 'Width for visualization', type = int)
+        help = 'Width for visualization', type = int)
 args = parser.parse_args()
 
 if __name__ == '__main__':
@@ -36,7 +39,8 @@ if __name__ == '__main__':
     env_test = VizdoomEnvironment(args.task_file, args.task)
     print('Environment is ready')
     print('Load model from', args.model_file)
-    model.load_state_dict(torch.load(args.model_file))
+    model.load_state_dict(
+            torch.load(args.model_file, map_location = 'cpu'))
     print('Model loaded')
     worker = ActorCriticWorker(model)
     print('Worker is ready')
@@ -55,10 +59,9 @@ if __name__ == '__main__':
                                 args.num_repeat)
     else:
         report = worker.test(env_test, args.test_episode,
-                                args.num_repeat,
-                                True, args.visualize_pause,
-                                [args.visualize_height, args.visualize_width],
-                                False, True)
+                            args.num_repeat, True, args.visualize_pause,
+                            [args.visualize_height, args.visualize_width],
+                            False, True)
     print("Results: score mean: %.5f(%.5f)," %
             (report['score_mean'], report['score_std']),
             "min: %.5f" % report['score_min'],
