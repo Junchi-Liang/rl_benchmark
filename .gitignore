@@ -3,3 +3,5 @@
 *.so
 *.o
 *__pycache__*
+trained_model
+
