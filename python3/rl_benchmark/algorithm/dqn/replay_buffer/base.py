@@ -89,7 +89,7 @@ class ReplayBuffer(object):
         assert self.action_buffer.get_size() == self.size
         assert self.reward_buffer.get_size() == self.size
         assert self.done_buffer.get_size() == self.size
-        assert sefl.tail == self.state_next_buffer.tail
+        assert self.tail == self.state_next_buffer.tail
         assert self.tail == self.action_buffer.tail
         assert self.tail == self.reward_buffer.tail
         assert self.tail == self.done_buffer.tail
