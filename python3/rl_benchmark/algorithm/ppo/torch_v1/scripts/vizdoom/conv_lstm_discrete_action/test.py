@@ -19,7 +19,7 @@ parser.add_argument('--task_file', help = 'Path to cfg file')
 parser.add_argument('--task', help = 'Name of task')
 parser.add_argument('--num_repeat', help = 'Number of repeated actions',
                                                     type = int, default = 4)
-parser.add_argument('--gpu_id', help = 'GPU id', default = '0')
+parser.add_argument('--gpu_id', help = 'GPU id')
 parser.add_argument('--test_episode', help = 'Number of test episodes',
                                                 type = int, default = 20)
 parser.add_argument('--visualize_pause',
@@ -39,7 +39,8 @@ if __name__ == '__main__':
     model = PPOModel(**model_config)
     print('Model is ready')
     print('Load model from', args.model_file)
-    model.load_state_dict(torch.load(args.model_file))
+    model.load_state_dict(
+            torch.load(args.model_file, map_location = 'cpu'))
     print('Model loaded')
     worker = PPOWorker(model)
     print('Worker is ready')
