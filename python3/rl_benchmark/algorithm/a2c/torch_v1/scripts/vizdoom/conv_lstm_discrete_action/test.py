@@ -34,7 +34,7 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
     # set up model and worker
-    model = ActorCriticModel(args.model_config)
+    model = ActorCriticModel(args.model_config).to(dtype = torch.float32)
     print('Model is ready')
     env_test = VizdoomEnvironment(args.task_file, args.task)
     print('Environment is ready')
@@ -48,9 +48,9 @@ if __name__ == '__main__':
     print('Setup device')
     if (args.gpu_id is not None):
         device = torch.device('cuda:' + str(args.gpu_id))
-        model.to(device = device, dtype = torch.float32)
+        model.to(device = device)
     else:
-        model.to(device = 'cpu', dtype = torch.float32)
+        model.to(device = 'cpu')
     print('Device setup done')
     # test
     print('Test')

@@ -36,7 +36,7 @@ if __name__ == '__main__':
     print('Environment is ready')
     model_config = json.load(open(args.model_config))
     model_config['n_action'] = len(env_test.action_set())
-    model = PPOModel(**model_config)
+    model = PPOModel(**model_config).to(dtype = torch.float32)
     print('Model is ready')
     print('Load model from', args.model_file)
     model.load_state_dict(
@@ -48,9 +48,9 @@ if __name__ == '__main__':
     print('Setup device')
     if (args.gpu_id is not None):
         device = torch.device('cuda:' + str(args.gpu_id))
-        model.to(device = device, dtype = torch.float32)
+        model.to(device = device)
     else:
-        model.to(device = 'cpu', dtype = torch.float32)
+        model.to(device = 'cpu')
     print('Device setup done')
     # start test
     print('Start Test')
