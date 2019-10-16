@@ -101,12 +101,13 @@ class ReplayBuffer(object):
         seq_len_list = [] # [batch_size]
         for ep_ind in ep_ind_chosen:
             ep_length = self.state_buffer[ep_ind].shape[0]
-            step_ind = np.random.randint(ep_length)
+            assert ep_length > 1
+            step_ind = np.random.randint(ep_length - 1)
             state_current_chunk = self.state_buffer[ep_ind][
                     step_ind:(step_ind + seq_len)]
             seq_len_list.append(state_current_chunk.shape[0])
             if (state_current_chunk.shape[0] < seq_len):
-                state_current_chunk = np.concatentate(
+                state_current_chunk = np.concatenate(
                         [state_current_chunk,
                         np.zeros(
                             [seq_len - state_current_chunk.shape[0]] +
@@ -115,7 +116,7 @@ class ReplayBuffer(object):
             state_next_chunk = self.state_buffer[ep_ind][
                     (step_ind + 1):(step_ind + seq_len + 1)]
             if (state_next_chunk.shape[0] < seq_len):
-                state_next_chunk = np.concatentate(
+                state_next_chunk = np.concatenate(
                         [state_next_chunk,
                         np.zeros(
                             [seq_len - state_next_chunk.shape[0]] +
@@ -124,7 +125,7 @@ class ReplayBuffer(object):
             action_chunk = self.action_buffer[ep_ind][
                     step_ind:(step_ind + seq_len)]
             if (action_chunk.shape[0] < seq_len):
-                action_chunk = np.concatentate(
+                action_chunk = np.concatenate(
                         [action_chunk,
                         np.zeros(
                             [seq_len - action_chunk.shape[0]] +
@@ -133,7 +134,7 @@ class ReplayBuffer(object):
             reward_chunk = self.reward_buffer[ep_ind][
                     step_ind:(step_ind + seq_len)]
             if (reward_chunk.shape[0] < seq_len):
-                reward_chunk = np.concatentate(
+                reward_chunk = np.concatenate(
                         [reward_chunk,
                         np.zeros(
                             [seq_len - reward_chunk.shape[0]] +
@@ -142,7 +143,7 @@ class ReplayBuffer(object):
             done_chunk = self.done_buffer[ep_ind][
                     step_ind:(step_ind + seq_len)]
             if (done_chunk.shape[0] < seq_len):
-                done_chunk = np.concatentate(
+                done_chunk = np.concatenate(
                         [done_chunk,
                         np.zeros(
                             [seq_len - done_chunk.shape[0]] +
