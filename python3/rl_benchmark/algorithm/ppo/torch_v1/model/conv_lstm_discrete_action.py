@@ -97,7 +97,8 @@ class PPOModel(nn.Module):
         """
         return self.lstm_list
 
-    def zero_lstm_state(self, batch_size = 1, dtype = np.float32):
+    def zero_lstm_state(self, batch_size = 1,
+            dtype = torch.float32, to_numpy = True):
         """
         Get Zero State for LSTM
         Args:
@@ -105,20 +106,26 @@ class PPOModel(nn.Module):
         batch_size = batch size
         dtype : type
         dtype = type for the state
+        to_numpy : bool
+        to_numpy = if returned tensor is converted to numpy.ndarray
         Returns:
         zero_state : dictionary
         zero_state = zero state, indexed by names in self.lstm_layer()
                         each element is (h0, c0)
+                        h0, c0 : numpy.ndarray or torch.Tensor
                         shape of h0, c0 is (1, batch size, hidden size)
         """
         assert self.contain_lstm()
-        zero_state = {
-                'lstm': (
-                    np.zeros([1, batch_size, self.lstm_h_size],
-                            dtype = dtype),
-                    np.zeros([1, batch_size, self.lstm_h_size],
-                            dtype = dtype)
-                )}
+        zero_state = {}
+        for lstm_layer_id in self.lstm_layer():
+            h0 = torch.zeros([1, batch_size, self.lstm_h_size],
+                    dtype = dtype)
+            c0 = torch.zeros([1, batch_size, self.lstm_h_size],
+                    dtype = dtype)
+            if (to_numpy):
+                h0 = h0.numpy()
+                c0 = c0.numpy()
+            zero_state[lstm_layer_id] = (h0, c0)
         return zero_state
 
     def build(self):

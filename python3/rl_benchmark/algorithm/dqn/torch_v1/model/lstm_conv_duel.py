@@ -96,7 +96,8 @@ class DQNModel(nn.Module):
         """
         return self.lstm_list
 
-    def zero_lstm_state(self, batch_size = 1, dtype = np.float32):
+    def zero_lstm_state(self, batch_size = 1,
+            dtype = torch.float32, to_numpy = True):
         """
         Get Zero State for LSTM
         Args:
@@ -104,20 +105,26 @@ class DQNModel(nn.Module):
         batch_size = batch size
         dtype : type
         dtype = type for the state
+        to_numpy : bool
+        to_numpy = if returned tensor is converted to numpy.ndarray
         Returns:
         zero_state : dictionary
         zero_state = zero state, indexed by names in self.lstm_layer()
                         each element is (h0, c0)
+                        h0, c0 : numpy.ndarray or torch.Tensor
                         shape of h0, c0 is (1, batch size, hidden size)
         """
         assert self.contain_lstm()
-        zero_state = {
-                'lstm': (
-                    np.zeros([1, batch_size, self.lstm_h_size],
-                            dtype = dtype),
-                    np.zeros([1, batch_size, self.lstm_h_size],
-                            dtype = dtype)
-                )}
+        zero_state = {}
+        for lstm_layer_id in self.lstm_layer():
+            h0 = torch.zeros([1, batch_size, self.lstm_h_size],
+                    dtype = dtype)
+            c0 = torch.zeros([1, batch_size, self.lstm_h_size],
+                    dtype = dtype)
+            if (to_numpy):
+                h0 = h0.numpy()
+                c0 = c0.numpy()
+            zero_state[lstm_layer_id] = (h0, c0)
         return zero_state
 
     def build(self):
@@ -247,7 +254,7 @@ class DQNModel(nn.Module):
         return {'q_value': q_value, 'lstm_state_output': lstm_state_output}
 
     def evaluate_loss(self, data_set,
-            seq_len = None, available_seq_len = None):
+            seq_len = None):
         """
         Evaluate Loss
         Args:
@@ -264,17 +271,17 @@ class DQNModel(nn.Module):
                                 each element is (h0, c0)
                                 h0, c0 are numpy.ndarray
                                 shape of h0, c0 is (1, batch size, hidden size)
+            'seq_len' : numpy.ndarray
+            'seq_len' = sequence length of each sampled sequences, shape [batch_size]
         seq_len : int
         seq_len = length of sequence, when only part of a sequence is used in loss, this should be provided
-        available_seq_len : int
-        available_seq_len = when only part of a sequence is used in loss, this is provided as the length of available part
         Returns:
         loss : dictionary
         loss = collection of losses
             'loss_whole_seq' : torch.Tensor
             'loss_whole_seq' = loss over whole sequence, shape ()
             'loss_truncated' : torch.Tensor
-            'loss_truncated' = loss over available part of sequences, shape (), returned only when seq_len and available_seq_len is provided
+            'loss_truncated' = loss over available part of sequences, shape (), returned only when seq_len is provided
             'loss' : torch.Tensor
             'loss' = loss to be optimized, shape ()
         """
@@ -301,15 +308,17 @@ class DQNModel(nn.Module):
         mse_loss = nn.MSELoss(reduction = 'none')(
                 q_chosen, target_q_batch)
         loss_whole_seq = torch.mean(mse_loss)
-        if ((seq_len is not None) and (available_seq_len is not None)):
-            batch_size = int(mse_loss.size(0) / seq_len)
-            assert mse_loss.size(0) == batch_size * seq_len
-            mse_loss_seq = mse_loss.view(seq_len, batch_size)
-            mask_seq = torch.zeros(seq_len, batch_size)
-            mask_seq[(seq_len - available_seq_len):] = 1.
-            mask_seq = mask_seq.to(dtype = mse_loss.dtype,
-                    device = mse_loss.device)
-            loss_truncated = torch.mean(mse_loss_seq * mask_seq)
+        if ((seq_len is not None) and ('seq_len' in data_set.keys())):
+            mask_whole_seq = (np.expand_dims(np.arange(seq_len),
+                axis = 1) < np.expand_dims(data_set['seq_len'], axis = 0))
+            mask_half_seq = (np.expand_dims(np.arange(seq_len),
+                axis = 1) >= np.expand_dims(data_set['seq_len'].astype(
+                    np.float) / 2, axis = 0))
+            mask_seq = torch.from_numpy(
+                    np.logical_and(mask_half_seq, mask_whole_seq)).to(
+                            dtype = mse_loss.dtype,
+                            device = mse_loss.device)
+            loss_truncated = torch.mean(mse_loss * mask_seq.view(-1))
             return {'loss_whole_seq': loss_whole_seq,
                     'loss_truncated': loss_truncated,
                     'loss': loss_truncated}
@@ -377,6 +386,7 @@ class DQNModel(nn.Module):
         with torch.no_grad():
             forward_result = self.forward(img_batch, lstm_state_batch)
         q_value = forward_result['q_value'].to(device = 'cpu').numpy()
+        lstm_state_output_tensor = forward_result['lstm_state_output']
         lstm_state_output = {}
         for lstm_layer_id in self.lstm_layer():
             state = []
