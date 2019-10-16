@@ -8,6 +8,6 @@ python3 train.py --n_env 16 --n_step 5 --num_repeat 1\
  --gpu_id 0\
  --optimizer Adam --gamma 0.99 --lambda_gae 1 --learning_rate 1e-4\
  --grad_clip_norm 40 --coeff_value 0.5 --coeff_policy 1 --coeff_entropy 0.01\
- --value_clip_range 0.05 --policy_clip_range 0.01 --n_epoch 2 --minibatch_size 4
+ --value_clip_range 0.05 --policy_clip_range 0.01 --n_epoch 1 --minibatch_size 4
 
 
