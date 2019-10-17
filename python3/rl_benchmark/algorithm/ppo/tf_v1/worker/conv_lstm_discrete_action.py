@@ -567,7 +567,8 @@ class PPOWorker(object):
                                 tuple(visualize_size[::-1]))
                         if (img_out.max() <= 1):
                             img_out *= 255
-                        cv2.imshow('screen', img_out.astype(np.uint8))
+                        cv2.imshow('screen',
+                                img_out[..., ::-1].astype(np.uint8))
                         cv2.waitKey(visualize_pause)
             score_list.append(env_test.episode_total_score())
             if (verbose):

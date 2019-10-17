@@ -36,7 +36,7 @@ parser.add_argument('--max_total_step',
 parser.add_argument('--report_per_it',
         help = 'Report every report_per_it iteration',
         type = int, default = 10000)
-parser.add_argument('--gpu_id', help = 'GPU id', default = '0')
+parser.add_argument('--gpu_id', help = 'GPU id')
 parser.add_argument('--gpu_usage', help = 'Percentage of GPU usage',
                                 type = float, default = 0.3)
 parser.add_argument('--model_output_prefix',
