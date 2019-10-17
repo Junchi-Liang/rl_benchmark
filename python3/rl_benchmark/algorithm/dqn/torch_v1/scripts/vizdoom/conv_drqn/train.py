@@ -78,7 +78,7 @@ parser.add_argument('--update_target_per_main_update',
         type = int, default = 5)
 parser.add_argument('--tau',
         help = 'Tau in target model update', type = float, default = 1.)
-parser.add_argument('--gpu_id', help = 'GPU id', default = '0')
+parser.add_argument('--gpu_id', help = 'GPU id')
 args = parser.parse_args()
 
 if __name__ == '__main__':

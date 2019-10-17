@@ -19,7 +19,7 @@ parser.add_argument('--task', help = 'Name of task')
 parser.add_argument('--num_repeat',
         help = 'Number of repeated actions',
         type = int, default = 4)
-parser.add_argument('--gpu_id', help = 'GPU id', default = None)
+parser.add_argument('--gpu_id', help = 'GPU id')
 parser.add_argument('--test_episode',
         help = 'Number of test episodes',
         type = int, default = 20)

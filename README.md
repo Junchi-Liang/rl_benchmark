@@ -52,5 +52,5 @@ pip3 install vizdoom
 
 More details can be found in [official repo](https://github.com/mwydmuch/ViZDoom/blob/master/doc/Building.md#pypi), you may need some [dependencies](https://github.com/mwydmuch/ViZDoom/blob/master/doc/Building.md#deps) to use it.
 
-I usually tested my implementations on an extended version of the basic task, [cfg file](https://www.dropbox.com/s/udurqw2slsv2zxp/basic_dynamic.cfg?dl=0) [wad file](https://www.dropbox.com/s/znt95k8xxa765fc/basic_dynamic.wad?dl=0). They should be placed under the same directory so that cfg file can find the wad file. You may also want to clone Vizdoom repo so that you can access their scenarios (you can find them under their [scenarios folder](https://github.com/mwydmuch/ViZDoom/tree/master/scenarios)).
+I usually tested my implementations on an extended version of the basic task, ([cfg file](https://www.dropbox.com/s/udurqw2slsv2zxp/basic_dynamic.cfg?dl=0)) ([wad file](https://www.dropbox.com/s/znt95k8xxa765fc/basic_dynamic.wad?dl=0)). They should be placed under the same directory so that cfg file can find the wad file. You may also want to clone Vizdoom repo so that you can access their scenarios (you can find them under their [scenarios folder](https://github.com/mwydmuch/ViZDoom/tree/master/scenarios)).
 
