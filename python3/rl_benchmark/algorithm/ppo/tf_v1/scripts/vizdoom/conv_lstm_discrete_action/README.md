@@ -24,7 +24,7 @@ A few things need to be checked before you run:
 
 `--statistics_output` specifies the directory under where TensorBoard log files locate, please prepare this directory before you run this script.
 
-`--model_output_prefix` specifies the output prefix of trained model file name. For example, if you put `\tmp\model` here, you will get trained model files like `\tmp\model_it_10000.pth` and `\tmp\model_it_20000.pth` for result after 10000 and 20000 iterations separately. Please prepare directory properly before you run this script.
+`--model_output_prefix` specifies the output prefix of trained model file name. For example, if you put `\tmp\model` here, you will get trained model files like `\tmp\model_it_10000.npz` and `\tmp\model_it_20000.npz` for result after 10000 and 20000 iterations separately. Please prepare directory properly before you run this script.
 
 `--gpu_id` specifies the ID of which GPU you want to use for training, if you want to use CPU for training, just ignore this argument and remove this argument. `--gpu_usage` specifies the ratio of GPU memory allocated to this script, for example `--gpu_usage 0.3` as 30% of GPU memory.
 
@@ -34,6 +34,12 @@ To test on "basic dynamic" task, please run:
 
 ```
 source basic_dynamic_visualize.sh
+```
+
+To test on "defend the center" task, please run:
+
+```
+source defend_the_center_visualize.sh
 ```
 
 You may want to check arguments in the shell scripts. Details explanation can be found in [test.py](https://github.com/Junchi-Liang/rl_benchmark/blob/master/python3/rl_benchmark/algorithm/ppo/tf_v1/scripts/vizdoom/conv_lstm_discrete_action/test.py).
@@ -54,4 +60,7 @@ A few things need to be checked before you run:
 
 Using provided training script, you should be able to see average score above 80 within 100000 iterations. (Of course, this is reinforcement learning, I cannot guarantee success in each training here :sweat_smile: )
 
+### defend the center
+
+Provided script trains for 3000000 iterations, it may take quite a long time to converge. You may want to try a trained model [here](https://www.dropbox.com/s/7cn0kslxzz657uf/ppo_defend_the_center.npz?dl=0).
 
