@@ -7,7 +7,7 @@ For now, implementations focus on Pytorch, some Tensorflow versions are provided
 
 | Algorithm | Python3 Implementation |
 | --- | --- |
-|D(R)QN | [Pytorch](https://github.com/Junchi-Liang/rl_benchmark/tree/master/python3/rl_benchmark/algorithm/dqn/torch_v1) |
+|[D(R)QN](https://github.com/Junchi-Liang/rl_benchmark/tree/master/python3/rl_benchmark/algorithm/dqn) | [Pytorch](https://github.com/Junchi-Liang/rl_benchmark/tree/master/python3/rl_benchmark/algorithm/dqn/torch_v1) |
 |A2C| [Pytorch]() |
 |PPO| [Pytorch]() / [Tensorflow]()|
 
