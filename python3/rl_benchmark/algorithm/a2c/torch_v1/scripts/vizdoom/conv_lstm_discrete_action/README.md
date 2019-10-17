@@ -56,5 +56,5 @@ Using provided training script, you should be able to see average score above 80
 
 ### defend the center
 
-Provided script trains for 3000000 iterations, it may take quite a long time to converge. You may want to try a trained model [here]('https://www.dropbox.com/s/uq1jbwl1axqygzt/a2c_defend_the_center.pth?dl=0').
+Provided script trains for 3000000 iterations, it may take quite a long time to converge. You may want to try a trained model [here]('https://www.dropbox.com/s/uq1jbwl1axqygzt/a2c_defend_the_center.pth?dl=').
 
