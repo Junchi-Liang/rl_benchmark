@@ -1,6 +1,6 @@
 # Instructions
 
-Here are some scripts for training and testing A2C in Vizdoom.
+Here are some scripts for training and testing PPO in Vizdoom.
 
 ## Training
 
@@ -16,7 +16,7 @@ To train on "defend the center" task, please run:
 source defend_the_center_train.sh
 ```
 
-You may want to check arguments in the shell scripts. Details explanation can be found in [train.py](https://github.com/Junchi-Liang/rl_benchmark/blob/master/python3/rl_benchmark/algorithm/a2c/torch_v1/scripts/vizdoom/conv_lstm_discrete_action/train.py).
+You may want to check arguments in the shell scripts. Details explanation can be found in [train.py](https://github.com/Junchi-Liang/rl_benchmark/blob/master/python3/rl_benchmark/algorithm/ppo/tf_v1/scripts/vizdoom/conv_lstm_discrete_action/train.py).
 
 A few things need to be checked before you run:
 
@@ -26,7 +26,7 @@ A few things need to be checked before you run:
 
 `--model_output_prefix` specifies the output prefix of trained model file name. For example, if you put `\tmp\model` here, you will get trained model files like `\tmp\model_it_10000.pth` and `\tmp\model_it_20000.pth` for result after 10000 and 20000 iterations separately. Please prepare directory properly before you run this script.
 
-`--gpu_id` specifies the ID of which GPU you want to use for training, if you want to use CPU for training, just ignore this argument and remove this argument.
+`--gpu_id` specifies the ID of which GPU you want to use for training, if you want to use CPU for training, just ignore this argument and remove this argument. `--gpu_usage` specifies the ratio of GPU memory allocated to this script, for example `--gpu_usage 0.3` as 30% of GPU memory.
 
 ## Testing
 
@@ -36,17 +36,11 @@ To test on "basic dynamic" task, please run:
 source basic_dynamic_visualize.sh
 ```
 
-To test on "defend the center" task, please run:
-
-```
-source defend_the_center_visualize.sh
-```
-
-You may want to check arguments in the shell scripts. Details explanation can be found in [test.py](https://github.com/Junchi-Liang/rl_benchmark/blob/master/python3/rl_benchmark/algorithm/a2c/torch_v1/scripts/vizdoom/conv_lstm_discrete_action/test.py).
+You may want to check arguments in the shell scripts. Details explanation can be found in [test.py](https://github.com/Junchi-Liang/rl_benchmark/blob/master/python3/rl_benchmark/algorithm/ppo/tf_v1/scripts/vizdoom/conv_lstm_discrete_action/test.py).
 
 A few things need to be checked before you run:
 
-`--task_file`, `--task`, and `--gpu_id` are the same as they are described in training section.
+`--task_file`, `--task`, and `--gpu_id` `--gpu_usage` are the same as they are described in training section.
 
 `--model_file` specifies trained model file, you can get them from training, which is specified by `--model_output_prefix` in training scripts.
 
@@ -60,7 +54,4 @@ A few things need to be checked before you run:
 
 Using provided training script, you should be able to see average score above 80 within 100000 iterations. (Of course, this is reinforcement learning, I cannot guarantee success in each training here :sweat_smile: )
 
-### defend the center
-
-Provided script trains for 3000000 iterations, it may take quite a long time to converge. You may want to try a trained model [here](https://www.dropbox.com/s/uq1jbwl1axqygzt/a2c_defend_the_center.pth?dl=0).
 

@@ -1,6 +1,6 @@
 # Instructions
 
-Here are some scripts for training and testing A2C in Vizdoom.
+Here are some scripts for training and testing PPO in Vizdoom.
 
 ## Training
 
@@ -16,7 +16,7 @@ To train on "defend the center" task, please run:
 source defend_the_center_train.sh
 ```
 
-You may want to check arguments in the shell scripts. Details explanation can be found in [train.py](https://github.com/Junchi-Liang/rl_benchmark/blob/master/python3/rl_benchmark/algorithm/a2c/torch_v1/scripts/vizdoom/conv_lstm_discrete_action/train.py).
+You may want to check arguments in the shell scripts. Details explanation can be found in [train.py](https://github.com/Junchi-Liang/rl_benchmark/blob/master/python3/rl_benchmark/algorithm/ppo/torch_v1/scripts/vizdoom/conv_lstm_discrete_action/train.py).
 
 A few things need to be checked before you run:
 
@@ -42,7 +42,7 @@ To test on "defend the center" task, please run:
 source defend_the_center_visualize.sh
 ```
 
-You may want to check arguments in the shell scripts. Details explanation can be found in [test.py](https://github.com/Junchi-Liang/rl_benchmark/blob/master/python3/rl_benchmark/algorithm/a2c/torch_v1/scripts/vizdoom/conv_lstm_discrete_action/test.py).
+You may want to check arguments in the shell scripts. Details explanation can be found in [test.py](https://github.com/Junchi-Liang/rl_benchmark/blob/master/python3/rl_benchmark/algorithm/ppo/torch_v1/scripts/vizdoom/conv_lstm_discrete_action/test.py).
 
 A few things need to be checked before you run:
 
@@ -62,5 +62,5 @@ Using provided training script, you should be able to see average score above 80
 
 ### defend the center
 
-Provided script trains for 3000000 iterations, it may take quite a long time to converge. You may want to try a trained model [here](https://www.dropbox.com/s/uq1jbwl1axqygzt/a2c_defend_the_center.pth?dl=0).
+Provided script trains for 3000000 iterations, it may take quite a long time to converge. You may want to try a trained model [here](https://www.dropbox.com/s/62k9e3pdnp3udhw/ppo_defend_the_center.pth?dl=0).
 
