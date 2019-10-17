@@ -66,7 +66,7 @@ class PPOWorker(object):
 
     def reset_lstm_state(self, ind_env = None, lstm_state = None):
         """
-        Reset LSTM State
+        Reset LSTM State Batch With Indices
         Args:
         ind_env : int or None
         ind_env = index of environment where LSTM state should be clear, if this is None, clear LSTM states of all environments
@@ -88,14 +88,14 @@ class PPOWorker(object):
     def update_lstm_state(self, state_new,
                             ind_env = None, lstm_state = None):
         """
-        Update LSTM State
+        Update LSTM State Batch With Indices
         Args:
         state_new : dictionary
         state_new = new state value, indexed by names in self.lstm_layer()
                         each element is (h0, c0)
                         shape of h0, c0 is (1, batch size, hidden size)
         ind_env : int or None
-        ind_env = index of environment where LSTM state should be clear, if this is None, clear LSTM states of all environments
+        ind_env = index of environment where LSTM state should be updated, if this is None, update LSTM states of all environments
         lstm_state : dictionary
         lstm_state = lstm state to be updated, indexed by names in self.lstm_layer()
                         each element is (h0, c0)
@@ -118,10 +118,10 @@ class PPOWorker(object):
     def get_lstm_state(self, ind_env = None, copy = True,
                         lstm_state = None):
         """
-        Get LSTM State
+        Get LSTM State Batch With Indices
         Args:
         ind_env : int or None
-        ind_env = index of environment where LSTM state should be clear, if this is None, clear LSTM states of all environments
+        ind_env = index of environment where LSTM state should be obtained, if this is None, return LSTM states of all environments
         copy : bool
         copy = when this is True, return a copy
         lstm_state : dictionary

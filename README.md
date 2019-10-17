@@ -18,10 +18,15 @@ This repo is tested under Ubuntu 18.04, CUDA 10.0, Python 3.6.
 Tested third-party library versions:
 
 Pytorch == 1.2.0
+
 Tensorflow == 1.14.0
+
 OpenCV == 4.1.1
+
 Numpy == 1.17.2
+
 Scipy == 1.3.1
+
 Vizdoom == 1.1.7
 
 Other versions may also work.
