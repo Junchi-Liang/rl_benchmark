@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import torchvision.transforms as T
 import torch.optim as optim
 import numpy as np
 from tqdm import trange, tqdm
@@ -202,7 +201,8 @@ class PPOWorker(object):
         self.optimizer.step()
 
     def sample_trajectory(self, env_id_chosen,
-                        schedule_local_time_step, num_repeat):
+                        schedule_local_time_step, num_repeat,
+                        get_state_kwargs = {}):
         """
         Sample Trajectories
         Args:
@@ -212,6 +212,8 @@ class PPOWorker(object):
         schedule_local_time_step = scheduled number of local time step, actual number can be smaller
         num_repeat : int
         num_repeat = number of repeated actions
+        get_state_kwargs : dictionary
+        get_state_kwargs = arguments for get_state
         Returns:
         total_step : int
         total_step = total of steps sampled in this batch
@@ -237,6 +239,11 @@ class PPOWorker(object):
             'old_neg_logpac' : numpy.ndarray
             'old_neg_logpac' = -log(pi_old(a_t)), shape [sequence size * batch_size]
         """
+        if (get_state_kwargs is None):
+            get_state_kwargs = {}
+        if ('setting' not in get_state_kwargs):
+            get_state_kwargs['setting'] = {'resolution':
+                    self.model.img_resolution[:2]}
         n_chosen = len(env_id_chosen)
         env_set_chosen = [self.env_set[env_id]
                             for env_id in env_id_chosen]
@@ -258,8 +265,7 @@ class PPOWorker(object):
         # sample trajectory
         for i_step in range(schedule_local_time_step):
             img_input_step = np.stack([
-                env.get_state({'resolution':
-                    self.model.img_resolution[:2]})
+                env.get_state(**get_state_kwargs)
                 for env in env_set_chosen], axis = 0)
             if (self.model.contain_lstm()):
                 lstm_state_input_step = self.get_lstm_state(env_id_chosen)
@@ -308,14 +314,12 @@ class PPOWorker(object):
             else:
                 if (self.model.contain_lstm()):
                     bootstrap = self.model.sample_action(
-                            env_chosen.get_state({'resolution':
-                                self.model.img_resolution[:2]}),
+                            env_chosen.get_state(**get_state_kwargs),
                             self.get_lstm_state(id_chosen)
                             )['state_value']
                 else:
                     bootstrap = self.model.sample_action(
-                            env_chosen.get_state({'resolution':
-                                self.model.img_resolution[:2]}),
+                            env_chosen.get_state(**get_state_kwargs),
                             None)['state_value']
             reward_plus_bootstrap = np.concatenate([
                 reward_list[:, i_chosen], [bootstrap]], axis = 0)
@@ -458,7 +462,8 @@ class PPOWorker(object):
     def test(self, env_test, test_episode, num_repeat,
                 visualize = False,
                 visualize_pause = None, visualize_size = [480, 640],
-                progress_bar = True, verbose = False):
+                progress_bar = True, verbose = False,
+                get_state_kwargs = {}):
         """
         Test The Model
         Args:
@@ -474,10 +479,17 @@ class PPOWorker(object):
         visualize_pause = when this is None, screen is not shown, otherwise, each frame is shown for visualize_pause ms
         visualize_size : list or tuple
         visualize_size = size of visualization windows, [h, w]
+        get_state_kwargs : dictionary
+        get_state_kwargs = arguments for get_state
         Returns:
         report : dictionary
         report = collection of statistics
         """
+        if (get_state_kwargs is None):
+            get_state_kwargs = {}
+        if ('setting' not in get_state_kwargs):
+            get_state_kwargs['setting'] = {'resolution':
+                    self.model.img_resolution[:2]}
         report = {}
         score_list = []
         if (progress_bar):
@@ -493,8 +505,7 @@ class PPOWorker(object):
                 lstm_state_test = None
             while (not env_test.episode_end()):
                 action_info = self.model.sample_action(
-                        env_test.get_state({'resolution':
-                            self.model.img_resolution[:2]}),
+                        env_test.get_state(**get_state_kwargs),
                         lstm_state_test)
                 action_index = action_info['action_index']
                 if (self.model.contain_lstm()):
@@ -507,8 +518,8 @@ class PPOWorker(object):
                     if (env_test.episode_end()):
                         break
                     if (visualize):
-                        img_out = cv2.resize(env_test.get_state({
-                            'resolution': self.model.img_resolution[:2]}),
+                        img_out = cv2.resize(env_test.get_state(
+                            **get_state_kwargs),
                             tuple(visualize_size[::-1]))
                         cv2.imshow('screen',
                                 (img_out[..., ::-1] * 255).astype(np.uint8))
