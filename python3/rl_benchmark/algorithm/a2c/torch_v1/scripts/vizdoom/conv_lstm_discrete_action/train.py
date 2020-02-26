@@ -88,8 +88,8 @@ if __name__ == '__main__':
     if (args.statistics_output is not None):
         if (not os.path.exists(args.statistics_output)):
             os.mkdir(args.statistics_output)
-        summary_writer = tf.compat.v1.summary.FileWriter(os.path.join(
-                                            args.statistics_output, 'test'))
+        summary_writer = tf.summary.create_file_writer(
+                os.path.join(args.statistics_output, 'test'))
     else:
         summary_writer = None
     # initial test
@@ -101,13 +101,13 @@ if __name__ == '__main__':
             "max: %.5f" % report['score_max'])
     print(time.ctime())
     if (summary_writer is not None):
-        summary = tf.compat.v1.Summary()
-        summary.value.add(tag = 'Average Total Reward',
-                            simple_value = report['score_mean'])
-        summary.value.add(tag = 'Score Standard Variance',
-                            simple_value = report['score_std'])
-        summary_writer.add_summary(summary, 0)
-        summary_writer.flush()
+        with summary_writer.as_default():
+            tf.summary.scalar(name = 'Average Total Reward',
+                    data = report['score_mean'], step = 0)
+            tf.summary.scalar(name = 'Score Standard Variance',
+                    data = report['score_std'], step = 0)
+            tf.summary.scalar(name = 'Training Episodes',
+                    data = 0, step = 0)
     if (args.model_output_prefix is not None):
         model_output_path = args.model_output_prefix + '_it_0.pth'
         torch.save(model.state_dict(), model_output_path)
@@ -160,14 +160,13 @@ if __name__ == '__main__':
                                             (total_hour, total_minute))
         print(time.ctime())
         if (summary_writer is not None):
-            summary = tf.compat.v1.Summary()
-            summary.value.add(tag = 'Average Total Reward',
-                                simple_value = report['score_mean'])
-            summary.value.add(tag = 'Score Standard Variance',
-                                simple_value = report['score_std'])
-            summary.value.add(tag = 'Training Episode', simple_value = total_ep)
-            summary_writer.add_summary(summary, total_step)
-            summary_writer.flush()
+            with summary_writer.as_default():
+                tf.summary.scalar(name = 'Average Total Reward',
+                        data = report['score_mean'], step = total_step)
+                tf.summary.scalar(name = 'Score Standard Variance',
+                        data = report['score_std'], step = total_step)
+                tf.summary.scalar(name = 'Training Episodes',
+                        data = total_ep, step = total_step)
         if (args.model_output_prefix is not None):
             model_output_path = args.model_output_prefix + ('_it_%d.pth' %
                                                                 total_step)
