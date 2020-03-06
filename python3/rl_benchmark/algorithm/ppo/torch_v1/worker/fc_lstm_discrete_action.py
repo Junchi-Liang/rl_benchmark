@@ -371,7 +371,7 @@ class PPOWorker(object):
                         coeff_value, coeff_policy, coeff_entropy,
                         value_clip_range, policy_clip_range,
                         learning_rate, num_epoch, minibatch_size,
-                        grad_clip_norm = None):
+                        grad_clip_norm = None, get_state_kwargs = {}):
         """
         Sample One Batch And Update The Model From It
         Args:
@@ -399,6 +399,8 @@ class PPOWorker(object):
         num_epoch = number of epochs
         minibatch_size : int
         minibatch_size = size of minibatch
+        get_state_kwargs : dictionary
+        get_state_kwargs = arguments for get_state
         Returns:
         total_step : int
         total_step = total of steps sampled in this batch
@@ -412,7 +414,7 @@ class PPOWorker(object):
         total_step, finished_episode, trajectory_set =\
                                 self.sample_trajectory(
                                     env_id_list, schedule_local_time_step,
-                                    num_repeat)
+                                    num_repeat, get_state_kwargs)
         local_step = int(total_step / len(env_id_list))
         for i_epoch in range(num_epoch):
             sample_cnt = 0
