@@ -350,7 +350,8 @@ class ActorCriticWorker(object):
 
     def train_batch(self, max_local_time_step, max_total_step, num_repeat,
                         coeff_value, coeff_policy, coeff_entropy,
-                        learning_rate, grad_clip_norm = None):
+                        learning_rate, grad_clip_norm = None,
+                        get_state_kwargs = {}):
         """
         Sample One Batch And Update The Model From It
         Args:
@@ -372,6 +373,8 @@ class ActorCriticWorker(object):
         learning_rate = learning rate
         grad_clip_norm : float or None
         grad_clip_norm = norm size for clipping gradients
+        get_state_kwargs : dictionary
+        get_state_kwargs = arguments for get_state
         Returns:
         total_step : int
         total_step = total of steps sampled in this batch
@@ -385,7 +388,7 @@ class ActorCriticWorker(object):
         total_step, finished_episode, trajectory_set =\
                                 self.sample_trajectory(
                                     env_id_list, schedule_local_time_step,
-                                    num_repeat)
+                                    num_repeat, get_state_kwargs)
         self.update_model(trajectory_set,
                 coeff_value, coeff_policy, coeff_entropy,
                 learning_rate, grad_clip_norm)
