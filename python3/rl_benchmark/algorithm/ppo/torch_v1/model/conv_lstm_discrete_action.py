@@ -138,7 +138,10 @@ class PPOModel(nn.Module):
         # convolution layers
         for i_conv, conv_config in enumerate(self.conv_arch):
             kernel_size, output_channel, stride,\
-                    padding, add_bias, activation = conv_config
+                    padding, add_bias, activation = conv_config[:6]
+            normalization_config = (conv_config[6]
+                    if len(conv_config) > 6 else None)
+            add_bias = (add_bias and (normalization_config is None))
             padding = convert_to_tuple(padding, int)
             kernel_size = convert_to_tuple(kernel_size, int)
             stride = convert_to_tuple(stride, int)
@@ -151,33 +154,44 @@ class PPOModel(nn.Module):
             if (add_bias):
                 nn.init.constant_(
                         submodule['conv%d' % (i_conv + 1)].bias, 0)
+            h = conv_output_size(h, padding[0], kernel_size[0], stride[0])
+            w = conv_output_size(w, padding[1], kernel_size[1], stride[1])
+            last_channel = output_channel
+            if (normalization_config is not None
+                    and normalization_config == 'layernorm'):
+                submodule['conv_layernorm%d' % (i_conv + 1)] = nn.LayerNorm([
+                    last_channel, h, w])
             if (activation is not None):
                 activation_type, activation_module = get_activation(
                                                             activation)
                 submodule[activation_type +
                             str(i_conv + 1)] = activation_module
-            h = conv_output_size(h, padding[0], kernel_size[0], stride[0])
-            w = conv_output_size(w, padding[1], kernel_size[1], stride[1])
-            last_channel = output_channel
         # flatten features
         submodule['conv_flat'] = Flatten()
         last_size = h * w * last_channel
         # fully connected layers
         for i_fc, fc_config in enumerate(self.fc_before_lstm):
-            num_hidden_unit, add_bias, activation = fc_config
+            num_hidden_unit, add_bias, activation = fc_config[:3]
+            normalization_config = (fc_config[3]
+                    if len(fc_config) > 3 else None)
+            add_bias = (add_bias and (normalization_config is None))
             submodule['fc%d' % i_fc] = nn.Linear(
                         last_size, num_hidden_unit, bias = add_bias)
             nn.init.xavier_uniform_(submodule['fc%d' % i_fc].weight,
                     calculate_gain_from_activation(activation))
             if (add_bias):
                 nn.init.constant_(submodule['fc%d' % i_fc].bias, 0)
+            last_size = num_hidden_unit
+            if (normalization_config is not None
+                    and normalization_config == 'layernorm'):
+                submodule['fc_layernorm%d'
+                        % i_fc] = nn.LayerNorm([last_size])
             if (activation is not None):
                 activation_type, activation_module = get_activation(
                                                             activation)
                 submodule[activation_type +
                         str(len(self.conv_arch) + i_fc + 1)
                         ] = activation_module
-            last_size = num_hidden_unit
         self.encoder = nn.Sequential(submodule)
         # LSTM
         if (self.contain_lstm()):

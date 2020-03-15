@@ -181,6 +181,7 @@ class ActorCriticWorker(object):
         grad_clip_norm : float or None
         grad_clip_norm = norm size for clipping gradients
         """
+        self.model.train()
         loss = self.model.evaluate_loss(
                 coeff_value, coeff_policy, coeff_entropy, data_batch)
         self.optimizer.zero_grad()
@@ -226,6 +227,7 @@ class ActorCriticWorker(object):
             'advantage' : numpy.ndarray
             'advantage' = advantage estimation, shape [seq len * batch_size]
         """
+        self.model.eval()
         if (get_state_kwargs is None):
             get_state_kwargs = {}
         if ('setting' not in get_state_kwargs):
@@ -420,6 +422,7 @@ class ActorCriticWorker(object):
         report : dictionary
         report = collection of statistics
         """
+        self.model.eval()
         if (get_state_kwargs is None):
             get_state_kwargs = {}
         if ('setting' not in get_state_kwargs):

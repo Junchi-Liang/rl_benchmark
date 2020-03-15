@@ -189,6 +189,7 @@ class PPOWorker(object):
         grad_clip_norm : float or None
         grad_clip_norm = norm size for clipping gradients
         """
+        self.model.train()
         loss = self.model.clipped_loss(
                 coeff_value, coeff_policy, coeff_entropy,
                 policy_clip_range, value_clip_range, data_batch)
@@ -239,6 +240,7 @@ class PPOWorker(object):
             'old_neg_logpac' : numpy.ndarray
             'old_neg_logpac' = -log(pi_old(a_t)), shape [sequence size * batch_size]
         """
+        self.model.eval()
         eps = 1e-8
         if (get_state_kwargs is None):
             get_state_kwargs = {}
@@ -484,6 +486,7 @@ class PPOWorker(object):
         report : dictionary
         report = collection of statistics
         """
+        self.model.eval()
         if (get_state_kwargs is None):
             get_state_kwargs = {}
         report = {}

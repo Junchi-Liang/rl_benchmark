@@ -135,7 +135,10 @@ class PPOModel(nn.Module):
             submodule = OrderedDict()
             for i_layer, layer_config in enumerate(
                     self.fc_config_before_lstm):
-                num_hidden_unit, add_bias, activation = layer_config
+                num_hidden_unit, add_bias, activation = layer_config[:3]
+                normalization_config = (layer_config[3]
+                        if len(layer_config) > 3 else None)
+                add_bias = (add_bias and (normalization_config is None))
                 last_layer = submodule['fc%d' % i_layer] = nn.Linear(
                         last_size, num_hidden_unit, bias = add_bias)
                 nn.init.xavier_uniform_(last_layer.weight,
@@ -143,6 +146,15 @@ class PPOModel(nn.Module):
                 if (add_bias):
                     nn.init.constant_(last_layer.bias, 0)
                 last_size = num_hidden_unit
+                if (normalization_config is not None
+                        and normalization_config == 'layernorm'):
+                    submodule['fc_layernorm%d'
+                            % i_layer] = nn.LayerNorm([last_size])
+                if (activation is not None):
+                    activation_type, activation_module = get_activation(
+                            activation)
+                    submodule[activation_type
+                            + str(i_layer)] = activation_module
             self.fc_function_before_lstm = nn.Sequential(submodule)
         else:
             self.fc_function_before_lstm = None
@@ -163,7 +175,10 @@ class PPOModel(nn.Module):
             submodule = OrderedDict()
             for i_layer, layer_config in enumerate(
                     self.fc_config_after_lstm):
-                num_hidden_unit, add_bias, activation = layer_config
+                num_hidden_unit, add_bias, activation = layer_config[:3]
+                normalization_config = (layer_config[3]
+                        if len(layer_config) > 3 else None)
+                add_bias = (add_bias and (normalization_config is None))
                 last_layer = submodule['fc%d' % i_layer] = nn.Linear(
                         last_size, num_hidden_unit, bias = add_bias)
                 nn.init.xavier_uniform_(last_layer.weight,
@@ -171,6 +186,15 @@ class PPOModel(nn.Module):
                 if (add_bias):
                     nn.init.constant_(last_layer.bias, 0)
                 last_size = num_hidden_unit
+                if (normalization_config is not None
+                        and normalization_config == 'layernorm'):
+                    submodule['fc_layernorm%d'
+                            % i_layer] = nn.LayerNorm([last_size])
+                if (activation is not None):
+                    activation_type, activation_module = get_activation(
+                            activation)
+                    submodule[activation_type
+                            + str(i_layer)] = activation_module
             self.fc_function_after_lstm = nn.Sequential(submodule)
         else:
             self.fc_function_after_lstm = None
