@@ -398,6 +398,7 @@ class PPOModel(nn.Module):
         loss : dictionary
         loss = a collection of computation result related to error
         """
+        eps = 1e-8
         if (value_output is None or policy_output is None or
                                         policy_logits is None):
             img_batch = torch.from_numpy(
@@ -456,8 +457,9 @@ class PPOModel(nn.Module):
         loss['neg_policy_loss'] = torch.mean(torch.max(
                         loss['neg_policy_loss_unclipped'],
                         loss['neg_policy_loss_clipped']))
-        loss['policy_entropy'] = -torch.mean(torch.sum(policy_output *
-                                    torch.log(policy_output), dim = -1))
+        loss['policy_entropy'] = -torch.mean(torch.sum(policy_output
+            * torch.log(torch.max(policy_output,
+                other = eps * torch.ones_like(policy_output))), dim = -1))
         loss['loss'] = coeff_value * loss['value_loss'] +\
                 coeff_policy * loss['neg_policy_loss'] -\
                 coeff_entropy * loss['policy_entropy']

@@ -287,6 +287,7 @@ class ActorCriticModel(nn.Module):
             'loss' : torch.Tensor
             'loss' = total loss, shape ()
         """
+        eps = 1e-8
         if (value_output is None or policy_output is None or
                 policy_logits is None):
             state_batch = torch.from_numpy(data_set['state'])
@@ -308,7 +309,8 @@ class ActorCriticModel(nn.Module):
         value_loss = 0.5 * torch.mean(
                 torch.pow(torch.squeeze(value_output, dim = 1) -
                     target_value_batch, 2))
-        log_policy_output = torch.log(policy_output)
+        log_policy_output = torch.log(torch.max(policy_output,
+            other = eps * torch.ones_like(policy_output)))
         policy_entropy = -torch.mean(
                 torch.sum(policy_output * log_policy_output, dim = 1))
         action_one_hot = F.one_hot(
