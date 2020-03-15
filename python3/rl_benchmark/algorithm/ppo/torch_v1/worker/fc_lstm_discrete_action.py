@@ -239,6 +239,7 @@ class PPOWorker(object):
             'old_neg_logpac' : numpy.ndarray
             'old_neg_logpac' = -log(pi_old(a_t)), shape [sequence size * batch_size]
         """
+        eps = 1e-8
         if (get_state_kwargs is None):
             get_state_kwargs = {}
         n_chosen = len(env_id_chosen)
@@ -275,7 +276,7 @@ class PPOWorker(object):
             value_batch.append(action_info['state_value'])
             pi_chosen = action_info['pi'][np.arange(n_chosen),
                                     action_info['action_index']]
-            neg_logpac_step = -np.log(pi_chosen)
+            neg_logpac_step = -np.log(np.maximum(pi_chosen, eps))
             neg_logpac_batch.append(neg_logpac_step)
             # update lstm state if necessary
             if (self.model.contain_lstm()):
