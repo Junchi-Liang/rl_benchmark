@@ -64,3 +64,5 @@ Using provided training script, you should be able to see average score above 80
 
 Provided script trains for 3000000 iterations, it may take quite a long time to converge. You may want to try a trained model [here](https://www.dropbox.com/s/62k9e3pdnp3udhw/ppo_defend_the_center.pth?dl=0).
 
+An demo video can be downloaded [here](https://www.dropbox.com/s/xo1w814x3lefsqw/vizdoom_ppo_defend_the_center.mp4?dl=0) or [here](https://www.youtube.com/watch?v=RyrKPR3QqXc)
+
